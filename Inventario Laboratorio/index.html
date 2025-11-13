@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario y Stock de Laboratorio</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+<div style="display: flex; align-items: center;">
+<img src="img/logo_ipetaym.png" alt="Logo IPETAYM" class="logo-header">
+<h1>Inventario de Laboratorio</h1>
+</div>
+
+<nav>
+<ul>
+<li><a href="#dashboard">Dashboard</a></li>
+<li><a href="#insumos">Gestión de Insumos</a></li>
+<li><a href="#movimientos">Movimientos de Stock</a></li>
+<li><a href="#proveedores">Proveedores</a></li>
+<li><a href="#reportes">Reportes</a></li>
+<li><a href="#usuarios">Usuarios</a></li>
+</ul>
+</nav>
+</header>
+
+    <main>
+        <section id="dashboard" class="active">
+            <h2>Dashboard</h2>
+            <div class="summary">
+                <p>Total de Insumos: <span id="total-insumos">0</span></p>
+                <p>Insumos Bajos: <span id="insumos-bajos">0</span></p>
+            </div>
+            <h3>Alertas y Reportes Rápidos</h3>
+            <ul id="alertas-dashboard">
+                </ul>
+        </section>
+
+        <section id="insumos">
+            <h2>Gestión de Insumos</h2>
+            <div class="actions-header">
+              <button id="add-insumo-btn">➕ Agregar Nuevo Insumo</button>
+              <input type="text" id="search-insumo" placeholder="Buscar insumo por nombre, categoría o proveedor...">
+            </div>
+          
+            <div id="insumo-form-container" style="display: none;">
+              <h3>Formulario de Insumo</h3>
+              <form id="insumo-form">
+                <input type="hidden" id="insumo-id">
+          
+                <label for="nombre-insumo">Nombre:</label>
+                <input type="text" id="nombre-insumo" required>
+          
+                <label for="categoria-insumo">Categoría:</label>
+                <select id="categoria-insumo" required>
+                  <option value="">Seleccione una categoría</option>
+                  <option value="reactivos">Reactivos</option>
+                  <option value="equipos">Equipos</option>
+                  <option value="solventes">Solventes</option>
+                  <option value="vidrio">Material de Vidrio</option>
+                  <option value="seguridad">Seguridad</option>
+                </select>
+          
+                <label for="cantidad-insumo">Cantidad:</label>
+                <input type="number" id="cantidad-insumo" min="0" required>
+          
+                <label for="unidad-insumo">Unidad:</label>
+                <input type="text" id="unidad-insumo" placeholder="Ej: ml, gramos, unidades">
+          
+                <label for="ubicacion-insumo">Ubicación:</label>
+                <input type="text" id="ubicacion-insumo" placeholder="Ej: Armario A1, Estante 3">
+          
+                <label for="proveedor-insumo">Proveedor:</label>
+                <select id="proveedor-insumo">
+                  <option value="">Seleccione un proveedor</option>
+                </select>
+          
+                <div class="form-buttons">
+                  <button type="submit">Guardar Insumo</button>
+                  <button type="button" id="cancel-insumo-form">Cancelar</button>
+                </div>
+              </form>
+            </div>
+
+            <table id="insumos-list">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Cantidad</th>
+                  <th>Unidad</th>
+                  <th>Ubicación</th>
+                  <th>Proveedor</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </section>
+          
+
+        <section id="movimientos">
+            <h2>Movimientos de Stock</h2>
+            <button id="add-movimiento-btn">Registrar Movimiento</button>
+            <div id="movimiento-form-container" style="display: none;">
+                <h3>Registrar Movimiento</h3>
+                <form id="movimiento-form">
+                    <label for="movimiento-insumo">Insumo:</label>
+                    <select id="movimiento-insumo" required>
+                        <option value="">Seleccione un insumo</option>
+                        </select>
+                    <label for="tipo-movimiento">Tipo de Movimiento:</label>
+                    <select id="tipo-movimiento" required>
+                        <option value="entrada">Entrada</option>
+                        <option value="salida">Salida</option>
+                    </select>
+                    <label for="cantidad-movimiento">Cantidad:</label>
+                    <input type="number" id="cantidad-movimiento" min="1" required>
+                    <label for="motivo-movimiento">Motivo:</label>
+                    <input type="text" id="motivo-movimiento" required>
+                    <button type="submit">Guardar Movimiento</button>
+                    <button type="button" id="cancel-movimiento-form">Cancelar</button>
+                </form>
+            </div>
+            <table id="movimientos-list">
+                <thead>
+                    <tr>
+                        <th>Insumo</th>
+                        <th>Movimiento</th>
+                        <th>Cantidad</th>
+                        <th>Motivo</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </section>
+
+        <section id="proveedores">
+            <h2>Gestión de Proveedores</h2>
+            <button id="add-proveedor-btn">Agregar Nuevo Proveedor</button>
+            <div id="proveedor-form-container" style="display: none;">
+                <h3>Formulario de Proveedor</h3>
+                <form id="proveedor-form">
+                    <input type="hidden" id="proveedor-id">
+                    <label for="nombre-proveedor">Nombre:</label>
+                    <input type="text" id="nombre-proveedor" required>
+                    <label for="contacto-proveedor">Contacto:</label>
+                    <input type="text" id="contacto-proveedor">
+                    <label for="telefono-proveedor">Teléfono:</label>
+                    <input type="tel" id="telefono-proveedor">
+                    <label for="email-proveedor">Email:</label>
+                    <input type="email" id="email-proveedor">
+                    <button type="submit">Guardar Proveedor</button>
+                    <button type="button" id="cancel-proveedor-form">Cancelar</button>
+                </form>
+            </div>
+            <table id="proveedores-list">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Contacto</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </section>
+
+        <section id="reportes">
+            <h2>Reportes y Estadísticas</h2>
+            <button id="generar-reporte-stock">Generar Reporte de Stock Crítico</button>
+            <button id="generar-reporte-consumo">Generar Reporte de Consumo</button>
+            <div id="reporte-contenido">
+                </div>
+        </section>
+
+
+        <section id="usuarios">
+            <h2>Usuarios y Roles</h2>
+            <button id="add-usuario-btn">Agregar Nuevo Usuario</button>
+            <div id="usuario-form-container" style="display: none;">
+                <h3>Formulario de Usuario</h3>
+                <form id="usuario-form">
+                    <input type="hidden" id="usuario-id">
+                  
+                    <label for="nombre-usuario">Nombre completo:</label>
+                    <input type="text" id="nombre-usuario" required>
+                  
+                    <label for="usuario-usuario">Usuario (login):</label>
+                    <input type="text" id="usuario-usuario" required>
+                  
+                    <label for="contraseña-usuario">Contraseña:</label>
+                    <input type="password" id="contraseña-usuario" required>
+                  
+                    <label for="rol-usuario">Rol:</label>
+                    <select id="rol-usuario" required>
+                      <option value="admin">Administrador</option>
+                      <option value="empleado">Empleado</option>
+                    </select>
+                  
+                    <button type="submit">Guardar Usuario</button>
+                    <button type="button" id="cancel-usuario-form">Cancelar</button>
+                  </form>
+                  
+            </div>
+            <table id="usuarios-list">
+                <thead>
+                    <tr>
+                        <th>Nombre de Usuario</th>
+                        <th>Rol</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="js/data.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
