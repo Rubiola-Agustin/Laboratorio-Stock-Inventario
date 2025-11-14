@@ -38,6 +38,16 @@ async function getProveedores() {
     return await res.json();
 }
 
+async function getProveedor(id) {
+  const res = await fetch(`${API_URL}/proveedores/${id}`);
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`Error al obtener proveedor: ${res.status} ${txt}`);
+  }
+  return await res.json();
+}
+
+
 async function addProveedor(proveedor) {
     const res = await fetch(`${API_URL}/proveedores`, {
         method: 'POST',
@@ -118,3 +128,15 @@ async function getReporteConsumo() {
   const res = await fetch(`${API_URL}/reportes/consumo`);
   return await res.json();
 }
+
+async function exportarInsumosExcel() {
+  const url = `${API_URL}/reportes/exportar-insumos`;
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'insumos.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+

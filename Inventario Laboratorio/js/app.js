@@ -1,10 +1,24 @@
 const app = {
-    init: async () => {
+init: async () => {
+    try {
       app.bindEvents();
+
+      await ui.setupCategoriaControls();
       await app.loadInitialData();
       ui.showSection('dashboard');
       await ui.updateDashboardSummary();
-    },
+
+      const btnExcel = document.getElementById('exportar-insumos-excel');
+      if (btnExcel && typeof exportarInsumosExcel === 'function') {
+        btnExcel.addEventListener('click', exportarInsumosExcel);
+      }
+
+    } catch (err) {
+      console.error("Error en app.init:", err);
+    }
+},
+
+
 
     bindEvents: () => {
       document.querySelectorAll('nav ul li a').forEach(link => {
@@ -96,32 +110,35 @@ const app = {
       }
     },
 
-    handleInsumoSubmit: async (e) => {
-      e.preventDefault();
-      try {
-        const id = document.getElementById('insumo-id').value;
-        const producto = {
-          nombre: document.getElementById('nombre-insumo').value,
-          categoria: document.getElementById('categoria-insumo').value,
-          cantidad: parseInt(document.getElementById('cantidad-insumo').value) || 0,
-          unidad: document.getElementById('unidad-insumo').value,
-          ubicacion: document.getElementById('ubicacion-insumo').value,
-          proveedorId: document.getElementById('proveedor-insumo').value || null,
-          precio: parseFloat(document.getElementById('precio-insumo')?.value) || 0
-        };
-  
-        if (id) await updateProducto(id, producto);
-        else await addProducto(producto);
-  
-        ui.hideInsumoForm();
-        await ui.renderInsumos();
-        await ui.updateDashboardSummary();
-      } catch (err) {
-        console.error('Error guardando insumo:', err);
-        alert('Error al guardar el insumo.');
-      }
-    },
-  
+handleInsumoSubmit: async (e) => {
+  e.preventDefault();
+  try {
+    const id = document.getElementById('insumo-id').value;
+    const producto = {
+      nombre: document.getElementById('nombre-insumo').value,
+      categoria: document.getElementById('categoria-insumo').value || document.getElementById('tipo-general').value,
+      cantidad: parseInt(document.getElementById('cantidad-insumo').value) || 0,
+      unidad: document.getElementById('unidad-insumo').value,
+      ubicacion: document.getElementById('ubicacion-insumo').value,
+      proveedorId: document.getElementById('proveedor-insumo').value || null,
+      observaciones: document.getElementById('observaciones-insumo').value || ''
+    };
+
+    if (id) {
+      await updateProducto(id, producto);
+    } else {
+      await addProducto(producto);
+    }
+
+    ui.hideInsumoForm();
+    await ui.renderInsumos();
+    await ui.updateDashboardSummary();
+  } catch (err) {
+    console.error('Error guardando insumo:', err);
+    alert('Error al guardar el insumo. Revisa la consola.');
+  }
+},
+
     editInsumo: async (id) => {
       const insumo = await getProductoById(id);
       ui.populateInsumoForm(insumo);
@@ -130,12 +147,17 @@ const app = {
       ui.showInsumoForm();
     },
   
-    deleteInsumo: async (id) => {
-      if (!confirm('¿Seguro que deseas eliminar este insumo?')) return;
+deleteInsumo: (id) => {
+  ui.mostrarModalConfirmacion(
+    '¿Estás seguro que deseas eliminar este insumo?',
+    async () => {
       await deleteProducto(id);
       await ui.renderInsumos();
       await ui.updateDashboardSummary();
-    },
+    }
+  );
+},
+
 
     handleMovimientoSubmit: async (e) => {
       e.preventDefault();
@@ -186,6 +208,29 @@ const app = {
       }
     },
 
+openNuevoProveedor: () => {
+  ui.populateProveedorForm({});
+  ui.showProveedorForm();
+},
+
+editProveedor: async (id) => {
+  const proveedor = await getProveedor(id);
+  ui.populateProveedorForm(proveedor);
+  ui.showProveedorForm();
+},
+
+deleteProveedor: async (id) => {
+  ui.mostrarModalConfirmacion(
+    '¿Eliminar este proveedor?',
+    async () => {
+      await deleteProveedor(id);
+      await ui.renderProveedores();
+      await ui.populateProveedorSelect('proveedor-insumo');
+    }
+  );
+},
+
+    
     handleUsuarioSubmit: async (e) => {
       e.preventDefault();
       try {

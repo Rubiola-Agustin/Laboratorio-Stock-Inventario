@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventario y Stock de Laboratorio</title>
+    <link rel="icon" type="image/png" href="img/logo_nuevo.png">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -38,66 +39,89 @@
         </section>
 
         <section id="insumos">
-            <h2>Gestión de Insumos</h2>
-            <div class="actions-header">
-              <button id="add-insumo-btn">➕ Agregar Nuevo Insumo</button>
-              <input type="text" id="search-insumo" placeholder="Buscar insumo por nombre, categoría o proveedor...">
-            </div>
-          
-            <div id="insumo-form-container" style="display: none;">
-              <h3>Formulario de Insumo</h3>
-              <form id="insumo-form">
-                <input type="hidden" id="insumo-id">
-          
-                <label for="nombre-insumo">Nombre:</label>
-                <input type="text" id="nombre-insumo" required>
-          
-                <label for="categoria-insumo">Categoría:</label>
-                <select id="categoria-insumo" required>
-                  <option value="">Seleccione una categoría</option>
-                  <option value="reactivos">Reactivos</option>
-                  <option value="equipos">Equipos</option>
-                  <option value="solventes">Solventes</option>
-                  <option value="vidrio">Material de Vidrio</option>
-                  <option value="seguridad">Seguridad</option>
-                </select>
-          
-                <label for="cantidad-insumo">Cantidad:</label>
-                <input type="number" id="cantidad-insumo" min="0" required>
-          
-                <label for="unidad-insumo">Unidad:</label>
-                <input type="text" id="unidad-insumo" placeholder="Ej: ml, gramos, unidades">
-          
-                <label for="ubicacion-insumo">Ubicación:</label>
-                <input type="text" id="ubicacion-insumo" placeholder="Ej: Armario A1, Estante 3">
-          
-                <label for="proveedor-insumo">Proveedor:</label>
-                <select id="proveedor-insumo">
-                  <option value="">Seleccione un proveedor</option>
-                </select>
-          
-                <div class="form-buttons">
-                  <button type="submit">Guardar Insumo</button>
-                  <button type="button" id="cancel-insumo-form">Cancelar</button>
-                </div>
-              </form>
-            </div>
+  <h2>Gestión de Insumos</h2>
+  <div class="actions-header">
+    <button id="add-insumo-btn">➕ Agregar Nuevo Insumo</button>
+    <input type="text" id="search-insumo" placeholder="Buscar insumo por nombre, categoría o proveedor...">
+  </div>
 
-            <table id="insumos-list">
-              <thead>
-                <tr>
-                  <th>Nombre</th>
-                  <th>Categoría</th>
-                  <th>Cantidad</th>
-                  <th>Unidad</th>
-                  <th>Ubicación</th>
-                  <th>Proveedor</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </section>
+  <div id="insumo-form-container" style="display: none;">
+    <h3>Formulario de Insumo</h3>
+    <form id="insumo-form">
+      <input type="hidden" id="insumo-id">
+
+      <label for="nombre-insumo">Nombre:</label>
+      <input type="text" id="nombre-insumo" required>
+
+      <label for="tipo-general">Tipo:</label>
+      <select id="tipo-general" required>
+        <option value="">Seleccione un tipo</option>
+        <option value="Reactivos">Reactivos</option>
+        <option value="Instrumentos y equipos">Instrumentos y equipos</option>
+        <option value="Soluciones y más">Soluciones y más</option>
+        <option value="Material de vidrio">Material de vidrio</option>
+        <option value="Material de plastico">Material de plastico</option>
+      </select>
+
+      <div id="reactivos-extra" style="display:none; margin-left: 6px;">
+        <label for="tipo-reactivo">Tipo de Reactivo:</label>
+        <select id="tipo-reactivo">
+          <option value="">Seleccione</option>
+          <option value="orgánicos">Orgánicos</option>
+          <option value="inorgánicos">Inorgánicos</option>
+        </select>
+
+        <label for="estado-reactivo">Estado:</label>
+        <select id="estado-reactivo">
+          <option value="">Seleccione</option>
+          <option value="sólidos">Sólidos</option>
+          <option value="líquidos">Líquidos</option>
+        </select>
+      </div>
+
+      <input type="hidden" id="categoria-insumo" value="">
+
+      <label for="cantidad-insumo">Cantidad:</label>
+      <input type="number" id="cantidad-insumo" min="0" required>
+
+      <label for="unidad-insumo">Unidad:</label>
+      <input type="text" id="unidad-insumo" placeholder="Ej: ml, gramos, unidades">
+
+      <label for="ubicacion-insumo">Ubicación:</label>
+      <input type="text" id="ubicacion-insumo" placeholder="Ej: Armario A1, Estante 3">
+
+      <label for="proveedor-insumo">Proveedor:</label>
+      <select id="proveedor-insumo">
+        <option value="">Seleccione un proveedor</option>
+      </select>
+
+      <label for="observaciones-insumo">Observaciones:</label>
+      <textarea id="observaciones-insumo" rows="3" placeholder="Ej: Mantener refrigerado, manipular con guantes..."></textarea>
+
+      <div class="form-buttons">
+        <button type="submit">Guardar Insumo</button>
+        <button type="button" id="cancel-insumo-form">Cancelar</button>
+      </div>
+    </form>
+  </div>
+
+  <table id="insumos-list">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th>Cantidad</th>
+        <th>Unidad</th>
+        <th>Proveedor</th>
+        <th>Ubicación</th>
+        <th>Observaciones</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
           
 
         <section id="movimientos">
@@ -176,6 +200,7 @@
             <h2>Reportes y Estadísticas</h2>
             <button id="generar-reporte-stock">Generar Reporte de Stock Crítico</button>
             <button id="generar-reporte-consumo">Generar Reporte de Consumo</button>
+            <button id="exportar-insumos-excel">Exportar Insumos a Excel</button>
             <div id="reporte-contenido">
                 </div>
         </section>
@@ -221,6 +246,19 @@
                     </tbody>
             </table>
         </section>
+
+<div id="modal-confirmacion" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3 id="modal-titulo">Confirmar acción</h3>
+    <p id="modal-mensaje">¿Estás seguro?</p>
+
+    <div class="modal-buttons">
+      <button id="modal-confirmar" class="confirm-btn">Confirmar</button>
+      <button id="modal-cancelar" class="cancel-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
     </main>
 
     <script src="js/data.js"></script>

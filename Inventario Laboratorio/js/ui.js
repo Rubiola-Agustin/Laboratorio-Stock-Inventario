@@ -28,36 +28,41 @@ const ui = {
       }
     },
   
-    renderInsumos: async (filtro = '') => {
-      const lista = document.querySelector('#insumos-list tbody');
-      lista.innerHTML = '';
-  
-      let productos = await getProductos();
-      if (filtro) {
-        filtro = filtro.toLowerCase();
-        productos = productos.filter(p =>
-          p.nombre.toLowerCase().includes(filtro) ||
-          p.categoria.toLowerCase().includes(filtro)
-        );
-      }
-  
-      productos.forEach(p => {
-        const fila = document.createElement('tr');
-        fila.innerHTML = `
-          <td>${p.nombre}</td>
-          <td>${p.categoria}</td>
-          <td>${p.cantidad}</td>
-          <td>${p.unidad || ''}</td>
-          <td>${p.ubicacion || ''}</td>
-          <td>${p.proveedor || 'N/A'}</td>
-          <td>
-            <button onclick="app.editInsumo(${p.id})">✏️</button>
-            <button onclick="app.deleteInsumo(${p.id})">🗑️</button>
-          </td>
-        `;
-        lista.appendChild(fila);
-      });
-    },
+renderInsumos: async (filtro = '') => {
+  const lista = document.querySelector('#insumos-list tbody');
+  lista.innerHTML = '';
+
+  let productos = await getProductos(); 
+  if (!Array.isArray(productos)) productos = [];
+
+  if (filtro) {
+    const q = filtro.toLowerCase();
+    productos = productos.filter(p =>
+      (p.nombre || '').toLowerCase().includes(q) ||
+      (p.categoria || '').toLowerCase().includes(q) ||
+      (p.proveedor || '').toLowerCase().includes(q)
+    );
+  }
+
+  productos.forEach(p => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${p.nombre}</td>
+      <td>${p.categoria || ''}</td>
+      <td>${p.cantidad}</td>
+      <td>${p.unidad || ''}</td>
+      <td>${p.proveedor || 'N/A'}</td>
+      <td>${p.ubicacion || ''}</td>
+      <td>${p.observaciones ? (p.observaciones.length > 40 ? p.observaciones.slice(0,40)+'...' : p.observaciones) : ''}</td>
+      <td>
+        <button class="edit-btn" onclick='app.editInsumo(${p.id})'>✏️</button>
+        <button class="delete-btn" onclick='app.deleteInsumo(${p.id})'>🗑️</button>
+      </td>
+    `;
+    lista.appendChild(fila);
+  });
+},
+
   
     populateCategoriaSelect: async (idSelect, seleccion = '') => {
       const select = document.getElementById(idSelect);
@@ -83,18 +88,103 @@ const ui = {
       });
     },
   
-    populateInsumoForm: (p) => {
-      document.getElementById('insumo-id').value = p.id || '';
-      document.getElementById('nombre-insumo').value = p.nombre || '';
-      document.getElementById('categoria-insumo').value = p.categoria || '';
-      document.getElementById('cantidad-insumo').value = p.cantidad || 0;
-      document.getElementById('unidad-insumo').value = p.unidad || '';
-      document.getElementById('ubicacion-insumo').value = p.ubicacion || '';
-      document.getElementById('proveedor-insumo').value = p.proveedorId || '';
-    },
-  
-    showInsumoForm: () => document.getElementById('insumo-form-container').style.display = 'block',
-    hideInsumoForm: () => document.getElementById('insumo-form-container').style.display = 'none',
+populateInsumoForm: (i) => {
+  document.getElementById('insumo-id').value = i.id || '';
+  document.getElementById('nombre-insumo').value = i.nombre || '';
+  document.getElementById('categoria-insumo').value = i.categoria || ''; 
+  const tipoGeneral = document.getElementById('tipo-general');
+  const tipoReactivo = document.getElementById('tipo-reactivo');
+  const estadoReactivo = document.getElementById('estado-reactivo');
+  const reactivosExtra = document.getElementById('reactivos-extra');
+
+  if (i.categoria && i.categoria.toLowerCase().includes('reactivo')) {
+    tipoGeneral.value = 'Reactivos';
+    reactivosExtra.style.display = 'block';
+    const lower = i.categoria.toLowerCase();
+    tipoReactivo.value = lower.includes('organ') ? 'orgánicos' : (lower.includes('inorg') ? 'inorgánicos' : '');
+    estadoReactivo.value = lower.includes('sól') || lower.includes('sol') ? 'sólidos' : (lower.includes('liq') ? 'líquidos' : '');
+  } else {
+    tipoGeneral.value = i.categoria || '';
+    reactivosExtra.style.display = 'none';
+    tipoReactivo.value = '';
+    estadoReactivo.value = '';
+  }
+
+  document.getElementById('cantidad-insumo').value = i.cantidad || 0;
+  document.getElementById('unidad-insumo').value = i.unidad || '';
+  document.getElementById('ubicacion-insumo').value = i.ubicacion || '';
+  document.getElementById('proveedor-insumo').value = i.proveedorId || '';
+  document.getElementById('observaciones-insumo').value = i.observaciones || '';
+
+  if (tipoGeneral.value !== 'Reactivos') {
+    document.getElementById('categoria-insumo').value = tipoGeneral.value || '';
+  } else {
+    if (tipoReactivo.value && estadoReactivo.value) {
+      document.getElementById('categoria-insumo').value = `Reactivos ${tipoReactivo.value} ${estadoReactivo.value}`;
+    } else {
+      document.getElementById('categoria-insumo').value = i.categoria || '';
+    }
+  }
+
+  ui.showInsumoForm();
+},
+
+showInsumoForm: () => document.getElementById('insumo-form-container').style.display = 'block',
+hideInsumoForm: () => document.getElementById('insumo-form-container').style.display = 'none',
+
+mostrarModalConfirmacion: (mensaje, callbackConfirmar) => {
+  const modal = document.getElementById('modal-confirmacion');
+  const modalMensaje = document.getElementById('modal-mensaje');
+  const btnConfirmar = document.getElementById('modal-confirmar');
+  const btnCancelar = document.getElementById('modal-cancelar');
+
+  modalMensaje.textContent = mensaje;
+  modal.style.display = 'flex';
+
+  const nuevoBtnConfirmar = btnConfirmar.cloneNode(true);
+  btnConfirmar.parentNode.replaceChild(nuevoBtnConfirmar, btnConfirmar);
+
+  nuevoBtnConfirmar.addEventListener('click', () => {
+    modal.style.display = 'none';
+    callbackConfirmar();
+  });
+
+  btnCancelar.onclick = () => {
+    modal.style.display = 'none';
+  };
+},
+
+setupCategoriaControls: () => {
+  const tipoGeneral = document.getElementById('tipo-general');
+  const tipoReactivo = document.getElementById('tipo-reactivo');
+  const estadoReactivo = document.getElementById('estado-reactivo');
+  const reactivosExtra = document.getElementById('reactivos-extra');
+  const categoriaHidden = document.getElementById('categoria-insumo');
+
+  if (!tipoGeneral) return;
+
+  tipoGeneral.addEventListener('change', () => {
+    if (tipoGeneral.value === 'Reactivos') {
+      reactivosExtra.style.display = 'block';
+      categoriaHidden.value = '';
+    } else {
+      reactivosExtra.style.display = 'none';
+      tipoReactivo.value = '';
+      estadoReactivo.value = '';
+      categoriaHidden.value = tipoGeneral.value;
+    }
+  });
+
+  [tipoReactivo, estadoReactivo].forEach(sel => {
+    sel.addEventListener('change', () => {
+      if (tipoReactivo.value && estadoReactivo.value) {
+        categoriaHidden.value = `Reactivos ${tipoReactivo.value} ${estadoReactivo.value}`;
+      }
+    });
+  });
+},
+
+
   
     renderMovimientos: async () => {
       const lista = document.querySelector('#movimientos-list tbody');
@@ -128,24 +218,26 @@ const ui = {
     showMovimientoForm: () => document.getElementById('movimiento-form-container').style.display = 'block',
     hideMovimientoForm: () => document.getElementById('movimiento-form-container').style.display = 'none',
   
-    renderProveedores: async () => {
-        const lista = document.querySelector('#proveedores-list tbody');
-        lista.innerHTML = '';
-        const proveedores = await getProveedores();
-        proveedores.forEach(p => {
-          const fila = document.createElement('tr');
-          fila.innerHTML = `
-            <td>${p.nombre}</td>
-            <td>${p.contacto || ''}</td>
-            <td>${p.telefono || ''}</td>
-            <td>${p.email || ''}</td>
-            <td>
-              <button onclick="ui.populateProveedorForm(${JSON.stringify(p)})">✏️</button>
-            </td>
-          `;
-          lista.appendChild(fila);
-        });
-      },
+renderProveedores: async () => {
+  const lista = document.querySelector('#proveedores-list tbody');
+  lista.innerHTML = '';
+
+  const proveedores = await getProveedores(); // de data.js
+  proveedores.forEach(p => {
+    const fila = document.createElement('tr');
+    fila.innerHTML = `
+      <td>${p.nombre}</td>
+      <td>${p.contacto || ''}</td>
+      <td>${p.telefono || ''}</td>
+      <td>${p.email || ''}</td>
+      <td>
+        <button class="edit-btn" onclick="app.editProveedor(${p.id})">✏️</button>
+        <button class="delete-btn" onclick="app.deleteProveedor(${p.id})">🗑️</button>
+      </td>
+    `;
+    lista.appendChild(fila);
+  });
+},
 
       populateProveedorForm: (p) => {
         document.getElementById('proveedor-id').value = p.id || '';
@@ -257,6 +349,8 @@ async function verificarStockCritico() {
     alerta.innerHTML = `<p style="color:green;">✅ Todo el stock está en niveles normales</p>`;
   }
 }
+
+
 
 window.mostrarReporteStockCritico = mostrarReporteStockCritico;
 window.mostrarReporteConsumo = mostrarReporteConsumo;

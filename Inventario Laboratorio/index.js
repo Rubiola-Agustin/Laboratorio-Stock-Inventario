@@ -1,6 +1,8 @@
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+const ExcelJS = require('exceljs');
+
 
 const app = express();
 app.use(cors());
@@ -31,9 +33,11 @@ app.get('/productos', (req, res) => {
       p.unidad,
       p.ubicacion,
       p.precio,
+      p.observaciones,
       pr.nombre AS proveedor
     FROM productos p
     LEFT JOIN proveedores pr ON p.proveedorId = pr.id
+    ORDER BY p.nombre ASC
   `;
   db.query(sql, (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -41,9 +45,15 @@ app.get('/productos', (req, res) => {
   });
 });
 
+
 app.get('/productos/:id', (req, res) => {
   const { id } = req.params;
-  const sql = 'SELECT * FROM productos WHERE id = ?';
+  const sql = `
+    SELECT p.*, pr.nombre AS proveedor
+    FROM productos p
+    LEFT JOIN proveedores pr ON p.proveedorId = pr.id
+    WHERE p.id = ?
+  `;
   db.query(sql, [id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     if (result.length === 0) return res.status(404).json({ error: 'Producto no encontrado' });
@@ -51,26 +61,34 @@ app.get('/productos/:id', (req, res) => {
   });
 });
 
+
 app.post('/productos', (req, res) => {
-  const { nombre, categoria, cantidad, unidad, ubicacion, proveedorId, precio } = req.body;
-  const sql = `INSERT INTO productos (nombre, categoria, cantidad, unidad, ubicacion, proveedorId, precio)
-               VALUES (?, ?, ?, ?, ?, ?, ?)`;
-  db.query(sql, [nombre, categoria, cantidad, unidad, ubicacion, proveedorId || null, precio || 0], (err, result) => {
+  const { nombre, categoria, cantidad, unidad, ubicacion, proveedorId, precio, observaciones } = req.body;
+  const sql = `
+    INSERT INTO productos (nombre, categoria, cantidad, unidad, ubicacion, proveedorId, precio, observaciones)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+  db.query(sql, [nombre, categoria, cantidad, unidad, ubicacion, proveedorId || null, precio || 0, observaciones || null], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ id: result.insertId, ...req.body });
   });
 });
 
+
 app.put('/productos/:id', (req, res) => {
   const { id } = req.params;
-  const { nombre, categoria, cantidad, unidad, ubicacion, proveedorId, precio } = req.body;
-  const sql = `UPDATE productos SET nombre = ?, categoria = ?, cantidad = ?, unidad = ?, 
-               ubicacion = ?, proveedorId = ?, precio = ? WHERE id = ?`;
-  db.query(sql, [nombre, categoria, cantidad, unidad, ubicacion, proveedorId || null, precio || 0, id], (err, result) => {
+  const { nombre, categoria, cantidad, unidad, ubicacion, proveedorId, precio, observaciones } = req.body;
+  const sql = `
+    UPDATE productos 
+    SET nombre = ?, categoria = ?, cantidad = ?, unidad = ?, ubicacion = ?, proveedorId = ?, precio = ?, observaciones = ?
+    WHERE id = ?
+  `;
+  db.query(sql, [nombre, categoria, cantidad, unidad, ubicacion, proveedorId || null, precio || 0, observaciones || null, id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: 'Producto actualizado correctamente' });
   });
 });
+
 
 app.delete('/productos/:id', (req, res) => {
   const { id } = req.params;
@@ -238,3 +256,107 @@ app.get('/reportes/consumo', (req, res) => {
     res.json(result);
   });
 });
+
+app.get('/reportes/exportar-insumos', async (req, res) => {
+  const sql = `
+    SELECT p.id, p.nombre, p.categoria, p.cantidad, p.unidad, p.ubicacion, 
+           pr.nombre AS proveedor
+    FROM productos p
+    LEFT JOIN proveedores pr ON p.proveedorId = pr.id
+    ORDER BY p.categoria ASC, p.nombre ASC
+  `;
+
+  db.query(sql, async (err, productos) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: err.message });
+    }
+
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+
+    const colores = {
+      "Instrumentos y equipos": "FFE6CC",
+      "reactivos organicos solidos": "FFCCCC",
+      "reactivos organicos liquido": "FFDDCC",
+      "reactivos inorganicos solidos": "CCE5FF",
+      "reactivos inorganicos liquidos": "CCFFFF",
+      "soluciones y mas": "E6FFCC",
+      "material de vidrio": "F2E6FF",
+      "material de plastico": "FFF2CC"
+    };
+
+    const categorias = [...new Set(productos.map(p => p.categoria))];
+
+    categorias.forEach(categoria => {
+      const sheet = workbook.addWorksheet(categoria.substring(0, 31));
+
+      const header = [
+        "ID",
+        "Nombre",
+        "Categoría",
+        "Cantidad",
+        "Unidad",
+        "Ubicación",
+        "Proveedor"
+      ];
+
+      const headerRow = sheet.addRow(header);
+
+      headerRow.eachCell(cell => {
+        cell.font = { bold: true };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "DDDDDD" }
+        };
+        cell.border = {
+          top: { style: "thin" },
+          bottom: { style: "thin" },
+          left: { style: "thin" },
+          right: { style: "thin" }
+        };
+      });
+
+      productos
+        .filter(p => p.categoria === categoria)
+        .forEach(p => {
+          const row = sheet.addRow([
+            p.id,
+            p.nombre,
+            p.categoria,
+            p.cantidad,
+            p.unidad,
+            p.ubicacion,
+            p.proveedor || "Sin proveedor"
+          ]);
+
+          row.eachCell(cell => {
+            cell.fill = {
+              type: "pattern",
+              pattern: "solid",
+              fgColor: { argb: colores[categoria] || "FFFFFF" }
+            };
+          });
+        });
+
+      sheet.columns.forEach(column => {
+        column.width = 20;
+      });
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=reporte_insumos.xlsx"
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+  });
+});
+
+
