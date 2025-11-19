@@ -130,10 +130,16 @@
             <div id="movimiento-form-container" style="display: none;">
                 <h3>Registrar Movimiento</h3>
                 <form id="movimiento-form">
-                    <label for="movimiento-insumo">Insumo:</label>
-                    <select id="movimiento-insumo" required>
-                        <option value="">Seleccione un insumo</option>
-                        </select>
+
+<label for="movimiento-insumo">Insumo:</label>
+
+<div class="autocomplete-container">
+    <input type="text" id="autocomplete-insumo" placeholder="Buscar insumo...">
+    <div id="autocomplete-list" class="autocomplete-list"></div>
+</div>
+
+
+
                     <label for="tipo-movimiento">Tipo de Movimiento:</label>
                     <select id="tipo-movimiento" required>
                         <option value="entrada">Entrada</option>
@@ -256,6 +262,13 @@
       <button id="modal-confirmar" class="confirm-btn">Confirmar</button>
       <button id="modal-cancelar" class="cancel-btn">Cancelar</button>
     </div>
+  </div>
+</div>
+
+<div id="info-modal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <p id="info-modal-text">Mensaje informativo</p>
+    <button id="info-modal-close" class="cancel-btn">Cerrar</button>
   </div>
 </div>
 

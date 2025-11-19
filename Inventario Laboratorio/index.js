@@ -89,13 +89,28 @@ app.put('/productos/:id', (req, res) => {
   });
 });
 
-
 app.delete('/productos/:id', (req, res) => {
   const { id } = req.params;
-  const sql = 'DELETE FROM productos WHERE id = ?';
-  db.query(sql, [id], (err, result) => {
+
+  const checkSQL = "SELECT COUNT(*) AS total FROM movimientos WHERE insumoId = ?";
+  db.query(checkSQL, [id], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ message: 'Producto eliminado correctamente' });
+
+    const tieneMovimientos = result[0].total > 0;
+
+    if (tieneMovimientos) {
+      return res.status(409).json({
+        error: "NO_ELIMINABLE",
+        message: "No se puede eliminar este insumo porque tiene movimientos registrados."
+      });
+    }
+
+    const deleteSQL = "DELETE FROM productos WHERE id = ?";
+    db.query(deleteSQL, [id], (err2) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+
+      res.json({ message: "Producto eliminado correctamente" });
+    });
   });
 });
 
@@ -231,16 +246,36 @@ app.delete('/usuarios/:id', (req, res) => {
 
 app.get('/reportes/stock-critico', (req, res) => {
   const sql = `
-    SELECT nombre, categoria, cantidad, unidad, ubicacion
+    SELECT *
     FROM productos
-    WHERE categoria LIKE '%reactivo%' AND cantidad < 10
-    ORDER BY cantidad ASC
+    WHERE 
+      (
+        categoria LIKE '%reactivo%' AND cantidad < 100
+      )
+      OR
+      (
+        categoria = 'material de vidrio' AND cantidad < 5
+      )
+      OR
+      (
+        categoria = 'material de plastico' AND cantidad < 5
+      )
+      OR
+      (
+        categoria = 'instrumentos y equipos' AND cantidad < 1
+      )
+      OR
+      (
+        categoria = 'soluciones y mas' AND cantidad < 1
+      )
   `;
+  
   db.query(sql, (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(result);
   });
 });
+
 
 app.get('/reportes/consumo', (req, res) => {
   const sql = `

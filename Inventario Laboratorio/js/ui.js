@@ -132,6 +132,7 @@ populateInsumoForm: (i) => {
 showInsumoForm: () => document.getElementById('insumo-form-container').style.display = 'block',
 hideInsumoForm: () => document.getElementById('insumo-form-container').style.display = 'none',
 
+
 mostrarModalConfirmacion: (mensaje, callbackConfirmar) => {
   const modal = document.getElementById('modal-confirmacion');
   const modalMensaje = document.getElementById('modal-mensaje');
@@ -141,17 +142,26 @@ mostrarModalConfirmacion: (mensaje, callbackConfirmar) => {
   modalMensaje.textContent = mensaje;
   modal.style.display = 'flex';
 
+
   const nuevoBtnConfirmar = btnConfirmar.cloneNode(true);
   btnConfirmar.parentNode.replaceChild(nuevoBtnConfirmar, btnConfirmar);
+
 
   nuevoBtnConfirmar.addEventListener('click', () => {
     modal.style.display = 'none';
     callbackConfirmar();
   });
 
-  btnCancelar.onclick = () => {
+
+  btnCancelar.addEventListener('click', () => {
     modal.style.display = 'none';
-  };
+  });
+},
+
+
+ocultarModalConfirmacion: () => {
+  const modal = document.getElementById("modal-confirmacion");
+  modal.style.display = "none";
 },
 
 setupCategoriaControls: () => {
@@ -202,22 +212,14 @@ setupCategoriaControls: () => {
         lista.appendChild(fila);
       });
     },
-  
-    populateMovimientoInsumoSelect: async (idSelect) => {
-      const select = document.getElementById(idSelect);
-      const productos = await getProductos();
-      select.innerHTML = '<option value="">Seleccione insumo</option>';
-      productos.forEach(p => {
-        const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = p.nombre;
-        select.appendChild(opt);
-      });
-    },
-  
+
     showMovimientoForm: () => document.getElementById('movimiento-form-container').style.display = 'block',
     hideMovimientoForm: () => document.getElementById('movimiento-form-container').style.display = 'none',
-  
+
+    renderMovimientoAutocomplete: async () => {
+  await activarAutocompleteInsumo();
+},
+
 renderProveedores: async () => {
   const lista = document.querySelector('#proveedores-list tbody');
   lista.innerHTML = '';
@@ -284,6 +286,67 @@ renderProveedores: async () => {
     showUsuarioForm: () => document.getElementById('usuario-form-container').style.display = 'block'
   };
 
+
+  ui.mostrarModalInfo = (mensaje) => {
+  const modal = document.getElementById("info-modal");
+  const texto = document.getElementById("info-modal-text");
+  const cerrar = document.getElementById("info-modal-close");
+
+  texto.textContent = mensaje;
+  modal.style.display = "block";
+
+  cerrar.onclick = () => modal.style.display = "none";
+};
+
+
+  async function activarAutocompleteInsumo() {
+    const input = document.getElementById('autocomplete-insumo');
+    const lista = document.getElementById('autocomplete-list');
+
+    const productos = await getProductos();
+
+    input.addEventListener('input', () => {
+        const texto = input.value.toLowerCase();
+        lista.innerHTML = "";
+
+        if (texto.length === 0) {
+            lista.style.display = "none";
+            return;
+        }
+
+        const filtrados = productos.filter(p =>
+            p.nombre.toLowerCase().includes(texto)
+        );
+
+        if (filtrados.length === 0) {
+            lista.style.display = "none";
+            return;
+        }
+
+        lista.style.display = "block";
+
+        filtrados.forEach(p => {
+            const item = document.createElement('div');
+            item.classList.add('autocomplete-item');
+            item.textContent = p.nombre;
+
+            item.addEventListener('click', () => {
+                input.value = p.nombre;
+                input.dataset.insumoId = p.id;
+                lista.style.display = "none";
+            });
+
+            lista.appendChild(item);
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!lista.contains(e.target) && e.target !== input) {
+            lista.style.display = "none";
+        }
+    });
+}
+
 async function mostrarReporteStockCritico() {
   const data = await getReporteStockCritico();
   const contenedor = document.getElementById('reporte-contenido');
@@ -349,6 +412,32 @@ async function verificarStockCritico() {
     alerta.innerHTML = `<p style="color:green;">✅ Todo el stock está en niveles normales</p>`;
   }
 }
+
+function activarBuscadorSelect(inputId, selectId) {
+  const input = document.getElementById(inputId);
+  const select = document.getElementById(selectId);
+
+  if (!input || !select) return;
+
+  const opcionesOriginales = [...select.options];
+
+  input.addEventListener('input', () => {
+    const texto = input.value.toLowerCase();
+
+    select.innerHTML = "";
+
+    const filtradas = opcionesOriginales.filter(opt =>
+      opt.textContent.toLowerCase().includes(texto)
+    );
+
+    filtradas.forEach(o => select.appendChild(o.cloneNode(true)));
+
+    if (filtradas.length === 1) {
+      select.value = filtradas[0].value;
+    }
+  });
+}
+
 
 
 

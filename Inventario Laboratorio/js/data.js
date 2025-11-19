@@ -29,9 +29,18 @@ async function updateProducto(id, producto) {
 }
 
 async function deleteProducto(id) {
-    const res = await fetch(`${API_URL}/productos/${id}`, { method: 'DELETE' });
-    return await res.json();
+  const res = await fetch(`${API_URL}/productos/${id}`, {
+    method: "DELETE"
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw error; 
+  }
+
+  return res.json();
 }
+
 
 async function getProveedores() {
     const res = await fetch(`${API_URL}/proveedores`);

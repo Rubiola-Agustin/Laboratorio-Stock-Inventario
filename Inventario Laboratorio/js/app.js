@@ -46,7 +46,7 @@ init: async () => {
       });
   
       document.getElementById('add-movimiento-btn').addEventListener('click', async () => {
-        await ui.populateMovimientoInsumoSelect('movimiento-insumo');
+            await ui.renderMovimientoAutocomplete();
         ui.showMovimientoForm();
       });
   
@@ -93,7 +93,7 @@ init: async () => {
           break;
         case 'movimientos':
           await ui.renderMovimientos();
-          await ui.populateMovimientoInsumoSelect('movimiento-insumo');
+          await ui.renderMovimientoAutocomplete();
           break;
         case 'proveedores':
           await ui.renderProveedores();
@@ -151,39 +151,62 @@ deleteInsumo: (id) => {
   ui.mostrarModalConfirmacion(
     '¿Estás seguro que deseas eliminar este insumo?',
     async () => {
-      await deleteProducto(id);
-      await ui.renderInsumos();
-      await ui.updateDashboardSummary();
+      try {
+        await deleteProducto(id);
+        await ui.renderInsumos();
+        await ui.updateDashboardSummary();
+        ui.ocultarModalConfirmacion();
+      } catch (err) {
+        ui.ocultarModalConfirmacion();
+
+        if (err.error === "NO_ELIMINABLE") {
+          ui.mostrarModalInfo("No se puede eliminar este insumo porque tiene movimientos registrados.");
+        } else {
+          ui.mostrarModalInfo("Error al eliminar el insumo.");
+        }
+      }
     }
   );
 },
 
 
-    handleMovimientoSubmit: async (e) => {
-      e.preventDefault();
-      try {
-        const movimiento = {
-          insumoId: document.getElementById('movimiento-insumo').value,
-          tipo: document.getElementById('tipo-movimiento').value,
-          cantidad: parseInt(document.getElementById('cantidad-movimiento').value),
-          motivo: document.getElementById('motivo-movimiento').value
-        };
-  
-        const producto = await getProductoById(movimiento.insumoId);
-        if (movimiento.tipo === 'salida' && movimiento.cantidad > producto.cantidad) {
-          alert('No hay suficiente stock disponible.');
-          return;
-        }
-  
-        await addMovimiento(movimiento);
-        ui.hideMovimientoForm();
-        await ui.renderMovimientos();
-        await ui.renderInsumos();
-        await ui.updateDashboardSummary();
-      } catch (err) {
-        console.error('Error al registrar movimiento:', err);
-      }
-    },
+
+   handleMovimientoSubmit: async (e) => {
+  e.preventDefault();
+  try {
+
+
+    const insumoInput = document.getElementById('autocomplete-insumo');
+    const insumoId = insumoInput.dataset.insumoId;
+
+    if (!insumoId) {
+      alert("Por favor seleccione un insumo válido.");
+      return;
+    }
+
+    const movimiento = {
+      insumoId: insumoId,
+      tipo: document.getElementById('tipo-movimiento').value,
+      cantidad: parseInt(document.getElementById('cantidad-movimiento').value),
+      motivo: document.getElementById('motivo-movimiento').value
+    };
+
+    const producto = await getProductoById(movimiento.insumoId);
+    if (movimiento.tipo === 'salida' && movimiento.cantidad > producto.cantidad) {
+      alert('No hay suficiente stock disponible.');
+      return;
+    }
+
+    await addMovimiento(movimiento);
+    ui.hideMovimientoForm();
+    await ui.renderMovimientos();
+    await ui.renderInsumos();
+    await ui.updateDashboardSummary();
+
+  } catch (err) {
+    console.error('Error al registrar movimiento:', err);
+  }
+},
 
     handleProveedorSubmit: async (e) => {
       e.preventDefault();
