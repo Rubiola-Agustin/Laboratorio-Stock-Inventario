@@ -278,7 +278,7 @@ renderProveedores: async () => {
       document.getElementById('usuario-id').value = u.id || '';
       document.getElementById('nombre-usuario').value = u.nombre || '';
       document.getElementById('usuario-usuario').value = u.usuario || '';
-      document.getElementById('rol-usuario').value = u.rol || 'empleado';
+      document.getElementById('rol-usuario').value = u.rol || 'estudiante';
       ui.showUsuarioForm();
     },
   
@@ -462,7 +462,8 @@ ui.actualizarHeaderUsuario = () => {
   const btnLogout = document.getElementById("btn-logout");
 
   if (usuarioActual) {
-    label.textContent = `👤 ${usuarioActual.nombre} (${usuarioActual.rol})`;
+const rol = usuarioActual.rol === "profesor" ? "Profesor" : "Estudiante";
+label.textContent = `👤 ${usuarioActual.nombre} - ${rol}`;
     btnLogin.style.display = "none";
     btnLogout.style.display = "inline-block";
   } else {
