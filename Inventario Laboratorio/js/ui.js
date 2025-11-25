@@ -224,7 +224,7 @@ renderProveedores: async () => {
   const lista = document.querySelector('#proveedores-list tbody');
   lista.innerHTML = '';
 
-  const proveedores = await getProveedores(); // de data.js
+  const proveedores = await getProveedores();
   proveedores.forEach(p => {
     const fila = document.createElement('tr');
     fila.innerHTML = `
@@ -283,7 +283,15 @@ renderProveedores: async () => {
     },
   
     hideUsuarioForm: () => document.getElementById('usuario-form-container').style.display = 'none',
-    showUsuarioForm: () => document.getElementById('usuario-form-container').style.display = 'block'
+    showUsuarioForm: () => document.getElementById('usuario-form-container').style.display = 'block',
+
+    limpiarFormularioLogin: () => {
+  document.getElementById("login-usuario").value = "";
+  document.getElementById("login-password").value = "";
+},
+
+
+    
   };
 
 
@@ -438,8 +446,84 @@ function activarBuscadorSelect(inputId, selectId) {
   });
 }
 
+let usuarioActual = null;
 
+ui.mostrarLogin = () => {
+  document.getElementById("login-modal").style.display = "flex";
+};
 
+ui.ocultarLogin = () => {
+  document.getElementById("login-modal").style.display = "none";
+};
+
+ui.actualizarHeaderUsuario = () => {
+  const label = document.getElementById("usuario-logueado");
+  const btnLogin = document.getElementById("btn-login");
+  const btnLogout = document.getElementById("btn-logout");
+
+  if (usuarioActual) {
+    label.textContent = `👤 ${usuarioActual.nombre} (${usuarioActual.rol})`;
+    btnLogin.style.display = "none";
+    btnLogout.style.display = "inline-block";
+  } else {
+    label.textContent = "";
+    btnLogin.style.display = "inline-block";
+    btnLogout.style.display = "none";
+  }
+};
+
+ui.controlarAccesoSecciones = () => {
+  const secciones = ["insumos", "movimientos", "proveedores", "reportes"];
+
+  secciones.forEach(id => {
+    const seccion = document.getElementById(id);
+    if (!seccion) return;
+
+    const mensaje = seccion.querySelector(".mensaje-login-requerido");
+    const contenido = seccion.querySelector(".contenido-protegido");
+
+    if (!mensaje || !contenido) return;
+
+    if (usuarioActual) {
+      mensaje.style.display = "none";
+      contenido.style.display = "block";
+    } else {
+      mensaje.style.display = "block";
+      contenido.style.display = "none";
+    }
+  });
+};
+ui.limpiarDatosProtegidos = () => {
+  const tablas = [
+    "#insumos-list tbody",
+    "#movimientos-list tbody",
+    "#proveedores-list tbody",
+    "#usuarios-list tbody"
+  ];
+
+  tablas.forEach(selector => {
+    const tabla = document.querySelector(selector);
+    if (tabla) tabla.innerHTML = '';
+  });
+
+  const contenedorReportes = document.getElementById("reporte-contenido");
+  if (contenedorReportes) {
+    contenedorReportes.innerHTML = "<p>🔒 Inicie sesión para visualizar reportes</p>";
+  }
+};
+
+ui.mostrarErrorLogin = (mensaje) => {
+  const error = document.getElementById("login-error");
+  if (!error) return;
+
+  error.textContent = mensaje;
+  error.style.display = "block";
+};
+
+ui.ocultarErrorLogin = () => {
+  const error = document.getElementById("login-error");
+  if (error) error.style.display = "none";
+};
 
 window.mostrarReporteStockCritico = mostrarReporteStockCritico;
 window.mostrarReporteConsumo = mostrarReporteConsumo;

@@ -14,6 +14,13 @@
 <h1>Inventario de Laboratorio</h1>
 </div>
 
+<div class="user-panel">
+  <span id="usuario-logueado"></span>
+  <button id="btn-login">Iniciar sesión</button>
+  <button id="btn-logout" style="display:none;">Cerrar sesión</button>
+</div>
+
+
 <nav>
 <ul>
 <li><a href="#dashboard">Dashboard</a></li>
@@ -39,11 +46,18 @@
         </section>
 
         <section id="insumos">
-  <h2>Gestión de Insumos</h2>
-  <div class="actions-header">
-    <button id="add-insumo-btn">➕ Agregar Nuevo Insumo</button>
-    <input type="text" id="search-insumo" placeholder="Buscar insumo por nombre, categoría o proveedor...">
+              <h2>Gestión de Insumos</h2>
+    <div class="mensaje-login-requerido" style="display:none;">
+    <p style="text-align:center; font-size:18px; padding:20px;">
+      🔒 Inicie sesión para visualizar esta sección
+    </p>
   </div>
+
+  <div class="contenido-protegido">
+                <div class="actions-header">
+            <button id="add-insumo-btn">➕ Agregar Nuevo Insumo</button>
+      <input type="text" id="search-insumo" placeholder="Buscar insumo por nombre, categoría o proveedor...">
+          </div>
 
   <div id="insumo-form-container" style="display: none;">
     <h3>Formulario de Insumo</h3>
@@ -120,12 +134,19 @@
     </thead>
     <tbody></tbody>
   </table>
+    </div> 
 </section>
-
-          
 
         <section id="movimientos">
             <h2>Movimientos de Stock</h2>
+            
+  <div class="mensaje-login-requerido" style="display:none;">
+    <p style="text-align:center; font-size:18px; padding:20px;">
+      🔒 Inicie sesión para visualizar esta sección
+    </p>
+  </div>
+
+  <div class="contenido-protegido">
             <button id="add-movimiento-btn">Registrar Movimiento</button>
             <div id="movimiento-form-container" style="display: none;">
                 <h3>Registrar Movimiento</h3>
@@ -166,10 +187,20 @@
                 <tbody>
                     </tbody>
             </table>
-        </section>
+              </div> 
+</section>
+
 
         <section id="proveedores">
             <h2>Gestión de Proveedores</h2>
+              <div class="mensaje-login-requerido" style="display:none;">
+    <p style="text-align:center; font-size:18px; padding:20px;">
+      🔒 Inicie sesión para visualizar esta sección
+    </p>
+  </div>
+
+  <div class="contenido-protegido">
+
             <button id="add-proveedor-btn">Agregar Nuevo Proveedor</button>
             <div id="proveedor-form-container" style="display: none;">
                 <h3>Formulario de Proveedor</h3>
@@ -200,16 +231,27 @@
                 <tbody>
                     </tbody>
             </table>
-        </section>
+  </div>
+</section>
+
 
         <section id="reportes">
             <h2>Reportes y Estadísticas</h2>
+              <div class="mensaje-login-requerido" style="display:none;">
+    <p style="text-align:center; font-size:18px; padding:20px;">
+      🔒 Inicie sesión para visualizar esta sección
+    </p>
+  </div>
+
+  <div class="contenido-protegido">
             <button id="generar-reporte-stock">Generar Reporte de Stock Crítico</button>
             <button id="generar-reporte-consumo">Generar Reporte de Consumo</button>
             <button id="exportar-insumos-excel">Exportar Insumos a Excel</button>
             <div id="reporte-contenido">
                 </div>
-        </section>
+  </div>
+</section>
+
 
 
         <section id="usuarios">
@@ -244,8 +286,8 @@
                 <thead>
                     <tr>
                         <th>Nombre de Usuario</th>
+                        <th>Usuario</th>
                         <th>Rol</th>
-                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -253,11 +295,29 @@
             </table>
         </section>
 
+<div id="login-modal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Iniciar Sesión</h3>
+    <p id="login-error" style="
+      color: #c0392b;
+      font-size: 14px;
+      margin-bottom: 10px;
+      display: none;
+    ">
+      Usuario o contraseña incorrectos
+    </p>
+    <input type="text" id="login-usuario" placeholder="Usuario"><br><br>
+    <input type="password" id="login-password" placeholder="Contraseña"><br><br>
+    <button id="login-confirmar">Ingresar</button>
+    <button id="login-cancelar">Cancelar</button>
+  </div>
+</div>
+
+
 <div id="modal-confirmacion" class="modal" style="display:none;">
   <div class="modal-content">
     <h3 id="modal-titulo">Confirmar acción</h3>
-    <p id="modal-mensaje">¿Estás seguro?</p>
-
+      <p id="modal-mensaje">¿Estás seguro?</p>
     <div class="modal-buttons">
       <button id="modal-confirmar" class="confirm-btn">Confirmar</button>
       <button id="modal-cancelar" class="cancel-btn">Cancelar</button>

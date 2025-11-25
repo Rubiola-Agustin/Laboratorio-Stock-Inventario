@@ -149,3 +149,17 @@ async function exportarInsumosExcel() {
   a.remove();
 }
 
+async function login(usuario, contraseña) {
+  const res = await fetch(`${API_URL}/login`, {
+    method: 'POST',
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ usuario, contraseña })
+  });
+
+  if (!res.ok) {
+    throw new Error("Login incorrecto");
+  }
+
+  return await res.json();
+}
+

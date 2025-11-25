@@ -394,4 +394,24 @@ app.get('/reportes/exportar-insumos', async (req, res) => {
   });
 });
 
+  app.post('/login', (req, res) => {
+  const { usuario, contraseña } = req.body;
+
+
+  const sql = `
+    SELECT id, nombre, usuario, rol
+    FROM usuarios
+    WHERE usuario = ? AND contraseña = ?
+  `;
+
+  db.query(sql, [usuario, contraseña], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    if (result.length === 0) {
+      return res.status(401).json({ error: "Usuario o contraseña incorrectos" });
+    }
+
+    res.json(result[0]);
+  });
+});
 

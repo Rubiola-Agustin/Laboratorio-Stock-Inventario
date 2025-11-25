@@ -7,6 +7,8 @@ init: async () => {
       await app.loadInitialData();
       ui.showSection('dashboard');
       await ui.updateDashboardSummary();
+      await ui.controlarAccesoSecciones();
+
 
       const btnExcel = document.getElementById('exportar-insumos-excel');
       if (btnExcel && typeof exportarInsumosExcel === 'function') {
@@ -82,6 +84,14 @@ init: async () => {
     },
 
     loadSectionData: async (sectionId) => {
+
+      
+  const seccionesProtegidas = ["insumos", "movimientos", "proveedores", "reportes", "usuarios"];
+
+  if (seccionesProtegidas.includes(sectionId) && !usuarioActual) {
+    console.warn("Sección protegida bloqueada sin sesión activa.");
+    return;
+  }
       switch (sectionId) {
         case 'dashboard':
           await ui.updateDashboardSummary();
@@ -280,3 +290,58 @@ deleteProveedor: async (id) => {
     app.init();
   });
   
+
+document.getElementById("btn-login").addEventListener("click", () => {
+  ui.limpiarFormularioLogin();
+  ui.ocultarErrorLogin();
+  ui.mostrarLogin();
+});
+
+document.getElementById("login-cancelar").addEventListener("click", () => {
+  ui.limpiarFormularioLogin();
+  ui.ocultarErrorLogin();
+  ui.ocultarLogin();
+});
+
+document.getElementById("login-confirmar").addEventListener("click", async () => {
+  const usuario = document.getElementById("login-usuario").value.trim();
+  const password = document.getElementById("login-password").value.trim();
+
+  try {
+     ui.ocultarErrorLogin();
+    const user = await login(usuario, password);
+
+    usuarioActual = user;
+    localStorage.setItem("usuario", JSON.stringify(user));
+
+    
+    ui.limpiarFormularioLogin();
+    ui.ocultarLogin();
+    ui.actualizarHeaderUsuario();
+    ui.controlarAccesoSecciones(); 
+
+} catch (err) {
+    ui.limpiarFormularioLogin();
+    ui.mostrarErrorLogin("❌ Usuario o contraseña incorrectos");
+}
+
+});
+["login-usuario", "login-password"].forEach(id => {
+  const input = document.getElementById(id);
+
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      document.getElementById("login-confirmar").click();
+    }
+  });
+});
+
+
+document.getElementById("btn-logout").addEventListener("click", () => {
+  usuarioActual = null;
+  localStorage.removeItem("usuario");
+  ui.actualizarHeaderUsuario();
+  ui.controlarAccesoSecciones();
+    ui.limpiarFormularioLogin();
+});
