@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000';
+const API_URL = 'https://midnightblue-dunlin-135431.hostingersite.com';
 
 async function getProductos() {
     const res = await fetch(`${API_URL}/productos`);
